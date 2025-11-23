@@ -19,9 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * Controller REST que expone los endpoints de la API de detección de mutantes.
- */
+
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -31,13 +29,7 @@ public class MutantController {
     private final MutantService mutantService;
     private final StatsService statsService;
 
-    /**
-     * POST /mutant
-     * Verifica si una secuencia de ADN pertenece a un mutante.
-     *
-     * @param request DnaRequest con el array de ADN
-     * @return 200 OK si es mutante, 403 Forbidden si no es mutante
-     */
+
     @PostMapping("/mutant")
     @Operation(
             summary = "Verificar si un ADN es mutante",
@@ -75,12 +67,6 @@ public class MutantController {
         }
     }
 
-    /**
-     * GET /stats
-     * Obtiene estadísticas de las verificaciones de ADN.
-     *
-     * @return StatsResponse con count_mutant_dna, count_human_dna y ratio
-     */
     @GetMapping("/stats")
     @Operation(
             summary = "Obtener estadísticas de verificaciones",
