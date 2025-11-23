@@ -68,7 +68,7 @@ public class MutantDetector {
         return false;  // Solo encontró 0 o 1 secuencia
     }
 
-    
+
     private boolean isValidDna(String[] dna) {
         if (dna == null || dna.length == 0) {
             return false;

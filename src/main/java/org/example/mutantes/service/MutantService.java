@@ -13,10 +13,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
-/**
- * Servicio que orquesta la detección de mutantes y la persistencia de resultados.
- * Implementa caché usando hash SHA-256 para evitar análisis duplicados.
- */
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -25,13 +22,7 @@ public class MutantService {
     private final MutantDetector mutantDetector;
     private final DnaRecordRepository dnaRecordRepository;
 
-    /**
-     * Analiza una secuencia de ADN y determina si es mutante.
-     * Implementa caché: si el ADN ya fue analizado, retorna el resultado guardado.
-     *
-     * @param dna Array de strings que representa la matriz NxN de ADN
-     * @return true si es mutante, false si no lo es
-     */
+
     @Transactional
     public boolean analyzeDna(String[] dna) {
         // Calcular hash del ADN para deduplicación
@@ -58,14 +49,6 @@ public class MutantService {
         return isMutant;
     }
 
-    /**
-     * Calcula el hash SHA-256 de una secuencia de ADN.
-     * Se usa para deduplicación en la base de datos.
-     *
-     * @param dna Array de strings del ADN
-     * @return Hash SHA-256 en formato hexadecimal
-     * @throws DnaHashCalculationException si hay error en el cálculo
-     */
     private String calculateDnaHash(String[] dna) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
