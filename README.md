@@ -830,6 +830,22 @@ curl https://examenmercado-3k9.onrender.com/stats
     - Compresión de respuestas HTTP
 
 ---
+## 📊 Diagramas
+
+### Diagrama de Secuencia
+
+El siguiente diagrama muestra el flujo completo de la API:
+
+![Diagrama de Secuencia](docs/diagrama-secuencia.png)
+
+El diagrama incluye:
+- ✅ POST /mutant (DNA mutante)
+- ✅ POST /mutant (DNA humano)
+- ✅ POST /mutant (DNA duplicado - caché)
+- ✅ POST /mutant (DNA inválido)
+- ✅ GET /stats (estadísticas)
+
+**Fuente PlantUML:** [diagrama-secuencia.puml](docs/diagrama-secuencia.puml)
 
 ## 📚 Referencias
 
