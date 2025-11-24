@@ -8,15 +8,15 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Estadísticas de verificaciones de ADN")
+@Schema(description = "Estadísticas de verificaciones")
 public class StatsResponse {
 
-    @Schema(description = "Cantidad de ADN mutante verificado", example = "40")
+    @Schema(example = "40")
     private long count_mutant_dna;
 
-    @Schema(description = "Cantidad de ADN humano verificado", example = "100")
+    @Schema(example = "100")
     private long count_human_dna;
 
-    @Schema(description = "Ratio de mutantes sobre humanos", example = "0.4")
+    @Schema(example = "0.4")
     private double ratio;
 }

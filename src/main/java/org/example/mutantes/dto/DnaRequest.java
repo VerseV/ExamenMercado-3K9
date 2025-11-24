@@ -1,6 +1,5 @@
 package org.example.mutantes.dto;
 
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -12,16 +11,15 @@ import org.example.mutantes.validation.ValidDnaSequence;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Request para verificar si una secuencia de ADN pertenece a un mutante")
+@Schema(description = "Request para verificar ADN")
 public class DnaRequest {
 
     @Schema(
-            description = "Secuencia de ADN representada como una matriz NxN de strings",
-            example = "[\"ATGCGA\",\"CAGTGC\",\"TTATGT\",\"AGAAGG\",\"CCCCTA\",\"TCACTG\"]",
-            required = true
+            description = "Secuencia de ADN (matriz NxN)",
+            example = "[\"ATGCGA\",\"CAGTGC\",\"TTATGT\",\"AGAAGG\",\"CCCCTA\",\"TCACTG\"]"
     )
-    @NotNull(message = "La secuencia de ADN no puede ser nula")
-    @NotEmpty(message = "La secuencia de ADN no puede estar vacía")
+    @NotNull(message = "El ADN no puede ser null")
+    @NotEmpty(message = "El ADN no puede estar vacío")
     @ValidDnaSequence
     private String[] dna;
 }
