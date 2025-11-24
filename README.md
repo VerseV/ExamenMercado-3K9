@@ -1,4 +1,3 @@
-@ -1,891 +1,43 @@
 # 🧬 Mutant Detector API - Examen MercadoLibre
 
 [![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://www.oracle.com/java/)
@@ -36,7 +35,7 @@
 | **API Base** | https://examenmercado-3k9.onrender.com |
 | **Swagger UI** (Documentación) | https://examenmercado-3k9.onrender.com/swagger-ui.html |
 | **Estadísticas** | https://examenmercado-3k9.onrender.com/stats |
-| **Repositorio GitHub** | https://github.com/VerseV/ExamenMercado-3K9 |
+| **Repositorio GitHub** | https://github.com/VerseV/Global-3K9-Adriel-Espejo-47664 |
 
 ### ⚠️ Nota sobre el Free Tier de Render
 
@@ -55,14 +54,15 @@ La aplicación está desplegada en el plan gratuito de Render:
 2. [Niveles Implementados](#-niveles-implementados)
 3. [Tecnologías Utilizadas](#-tecnologías-utilizadas)
 4. [Arquitectura del Proyecto](#-arquitectura-del-proyecto)
-5. [Instalación y Ejecución](#-instalación-y-ejecución)
-6. [Uso de la API](#-uso-de-la-api)
-7. [Testing y Cobertura](#-testing-y-cobertura)
-8. [Docker](#-docker)
-9. [Base de Datos](#-base-de-datos)
-10. [Algoritmo de Detección](#-algoritmo-de-detección)
-11. [Optimizaciones](#-optimizaciones)
-12. [Ejemplos de Uso](#-ejemplos-de-uso)
+5. [Diagramas](#-diagramas)
+6. [Instalación y Ejecución](#-instalación-y-ejecución)
+7. [Uso de la API](#-uso-de-la-api)
+8. [Testing y Cobertura](#-testing-y-cobertura)
+9. [Docker](#-docker)
+10. [Base de Datos](#-base-de-datos)
+11. [Algoritmo de Detección](#-algoritmo-de-detección)
+12. [Optimizaciones](#-optimizaciones)
+13. [Ejemplos de Uso](#-ejemplos-de-uso)
 
 ---
 
@@ -175,9 +175,15 @@ Total: 2 secuencias → ES MUTANTE ✅
 ### Estructura de Carpetas
 
 ```
-ExamenMercado-3K9/
+Global-3K9-Adriel-Espejo-47664/
 │
-├── src/main/java/org/example/
+├── docs/                     # Documentación y diagramas
+│   ├── diagrama-clases.puml
+│   ├── Diagrama_de_Clases.png
+│   ├── diagrama-secuencia.puml
+│   └── Diagrama_de_Secuencia.png
+│
+├── src/main/java/org/example/mutantes/
 │   ├── config/               # Configuración (Swagger)
 │   │   └── SwaggerConfig.java
 │   │
@@ -208,12 +214,12 @@ ExamenMercado-3K9/
 │   │   ├── ValidDnaSequence.java
 │   │   └── ValidDnaSequenceValidator.java
 │   │
-│   └── MutantDetectorApplication.java
+│   └── ExamenMercado3K9Application.java
 │
 ├── src/main/resources/
 │   └── application.properties
 │
-├── src/test/java/org/example/
+├── src/test/java/org/example/mutantes/
 │   ├── controller/
 │   │   └── MutantControllerTest.java    (8 tests)
 │   └── service/
@@ -269,6 +275,76 @@ ExamenMercado-3K9/
 
 ---
 
+## 📊 Diagramas
+
+### Diagrama de Clases
+
+El siguiente diagrama muestra la estructura completa de clases del sistema:
+
+![Diagrama de Clases](docs/Diagrama_de_Clases.png)
+
+#### Componentes del Diagrama de Clases
+
+| Paquete | Clases | Descripción |
+|---------|--------|-------------|
+| **controller** | `MutantController` | Capa de presentación REST con endpoints |
+| **service** | `MutantService`, `MutantDetector`, `StatsService` | Lógica de negocio y algoritmo core |
+| **repository** | `DnaRecordRepository` | Acceso a datos con Spring Data JPA |
+| **entity** | `DnaRecord` | Entidad JPA para persistencia |
+| **dto** | `DnaRequest`, `StatsResponse`, `ErrorResponse` | Data Transfer Objects |
+| **validation** | `ValidDnaSequence`, `ValidDnaSequenceValidator` | Validaciones personalizadas |
+| **exception** | `GlobalExceptionHandler`, `DnaHashCalculationException` | Manejo de errores |
+| **config** | `SwaggerConfig` | Configuración de Swagger/OpenAPI |
+
+**Relaciones clave:**
+- `MutantController` → usa → `MutantService` y `StatsService`
+- `MutantService` → usa → `MutantDetector` y `DnaRecordRepository`
+- `DnaRecordRepository` → extiende → `JpaRepository<DnaRecord, Long>`
+- `ValidDnaSequenceValidator` → implementa → `ConstraintValidator`
+
+**Archivo fuente:** [diagrama-clases.puml](docs/diagrama-clases.puml)
+
+---
+
+### Diagrama de Secuencia
+
+El siguiente diagrama muestra el flujo completo de ejecución de la API:
+
+![Diagrama de Secuencia](docs/Diagrama_de_Secuencia.png)
+
+#### Flujos del Diagrama de Secuencia
+
+1. **POST /mutant - Verificar ADN Mutante**
+    - Validación de entrada con `@ValidDnaSequence`
+    - Cálculo de hash SHA-256 para deduplicación
+    - Búsqueda en caché (base de datos)
+    - Algoritmo de detección (4 direcciones)
+    - Early Termination cuando se encuentran >1 secuencias
+    - Persistencia del resultado
+
+2. **GET /stats - Obtener Estadísticas**
+    - Consulta de contadores en base de datos
+    - Cálculo del ratio mutantes/humanos
+    - Respuesta JSON con estadísticas
+
+3. **Manejo de Excepciones**
+    - Validación: HTTP 400 Bad Request
+    - Errores de sistema: HTTP 500 Internal Server Error
+
+**Componentes principales:**
+- `Usuario` → Actor que consume la API
+- `MutantController` → REST Controller
+- `ValidDnaSequenceValidator` → Validación de entrada
+- `MutantService` → Orquestación y caché
+- `MutantDetector` → Algoritmo de detección
+- `DnaRecordRepository` → Persistencia
+- `StatsService` → Cálculo de estadísticas
+- `GlobalExceptionHandler` → Manejo de errores
+
+**Archivo fuente:** [diagrama-secuencia.puml](docs/diagrama-secuencia.puml)
+
+---
+
 ## 🚀 Instalación y Ejecución
 
 ### Prerequisitos
@@ -280,8 +356,8 @@ ExamenMercado-3K9/
 ### Clonar el Repositorio
 
 ```bash
-git clone https://github.com/VerseV/ExamenMercado-3K9.git
-cd ExamenMercado-3K9
+git clone https://github.com/VerseV/Global-3K9-Adriel-Espejo-47664.git
+cd Global-3K9-Adriel-Espejo-47664
 ```
 
 ### Opción 1: Ejecutar con Gradle (Recomendado)
@@ -831,38 +907,8 @@ curl https://examenmercado-3k9.onrender.com/stats
     - Compresión de respuestas HTTP
 
 ---
-## 📊 Diagramas
-
-### Diagrama de Secuencia
-
-El siguiente diagrama muestra el flujo completo de la API:
-
-<img width="1436" height="1758" alt="diagrama_secuencia" src="https://github.com/user-attachments/assets/f6cb1891-beb7-45aa-baed-9cabfa008937" />
-El siguiente diagrama muestra el flujo completo de ejecución de la API REST Detector de Mutantes:
-
-El diagrama incluye:
-- ✅ POST /mutant (DNA mutante)
-- ✅ POST /mutant (DNA humano)
-- ✅ POST /mutant (DNA duplicado - caché)
-- ✅ POST /mutant (DNA inválido)
-- ✅ GET /stats (estadísticas)
-  ![Diagrama de Secuencia](diagrama-secuencia.png)
-
-**Fuente PlantUML:** [diagrama-secuencia.puml](docs/diagrama-secuencia.puml)
-#### Componentes del Diagrama
 
 ## 📚 Referencias
-| Componente | Tipo | Descripción |
-|------------|------|-------------|
-| **Usuario** | Actor | Cliente que consume la API |
-| **MutantController** | Controller | Capa de presentación REST |
-| **ValidDnaSequenceValidator** | Validator | Validación de entrada (@Valid) |
-| **GlobalExceptionHandler** | Exception Handler | Manejo centralizado de errores |
-| **MutantService** | Service | Orquestación y lógica de negocio |
-| **MutantDetector** | Service | Algoritmo core de detección |
-| **DnaRecordRepository** | Repository | Acceso a datos (Spring Data JPA) |
-| **StatsService** | Service | Cálculo de estadísticas |
-| **H2 Database** | Database | Persistencia de datos |
 
 ### Documentación Oficial
 
@@ -896,27 +942,11 @@ Este proyecto fue desarrollado como parte de un examen técnico académico para 
 - **MercadoLibre** por el desafío técnico propuesto
 
 ---
-#### Flujos Principales
 
 <div align="center">
-1. **POST /mutant - Verificar ADN Mutante**
-   - Validación de entrada con `@ValidDnaSequence`
-   - Cálculo de hash SHA-256 para deduplicación
-   - Búsqueda en caché (base de datos)
-   - Algoritmo de detección (4 direcciones)
-   - Early Termination cuando se encuentran >1 secuencias
-   - Persistencia del resultado
 
 **⭐ Si este proyecto te resultó útil, considera darle una estrella en GitHub ⭐**
-2. **GET /stats - Obtener Estadísticas**
-    - Consulta de contadores en base de datos
-    - Cálculo del ratio mutantes/humanos
-    - Respuesta JSON con estadísticas
 
-[Ver Proyecto en GitHub](https://github.com/VerseV/ExamenMercado-3K9) | [Ver API en Producción](https://examenmercado-3k9.onrender.com/swagger-ui.html)
-3. **Manejo de Excepciones**
-    - Validación: HTTP 400 Bad Request
-    - Errores de sistema: HTTP 500 Internal Server Error
+[Ver Proyecto en GitHub](https://github.com/VerseV/Global-3K9-Adriel-Espejo-47664) | [Ver API en Producción](https://examenmercado-3k9.onrender.com/swagger-ui.html)
 
 </div>
-**Archivo fuente:** [diagrama-secuencia.puml](diagrama-secuencia.puml)
