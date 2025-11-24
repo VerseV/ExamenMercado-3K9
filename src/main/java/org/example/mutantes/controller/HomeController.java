@@ -8,7 +8,6 @@ public class HomeController {
 
     @GetMapping("/")
     public String home() {
-        // Redirige de la raíz a la documentación de Swagger
         return "redirect:/swagger-ui.html";
     }
 }
