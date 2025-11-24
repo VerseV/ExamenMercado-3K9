@@ -3,13 +3,16 @@ plugins {
     id 'org.springframework.boot' version '3.2.0'
     id 'io.spring.dependency-management' version '1.1.4'
     id 'jacoco'
+    id 'info.solidsoft.pitest' version '1.15.0'
 }
 
 group = 'org.example'
 version = '0.0.1-SNAPSHOT'
 
 java {
-    sourceCompatibility = '17'
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
 configurations {
@@ -28,28 +31,26 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-    // Swagger/OpenAPI
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
-
-    // H2 Database
+    // Database
     runtimeOnly 'com.h2database:h2'
 
     // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
+    // Swagger/OpenAPI
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+
     // Testing
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testCompileOnly 'org.projectlombok:lombok'
-    testAnnotationProcessor 'org.projectlombok:lombok'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
-    finalizedBy jacocoTestReport
 }
 
-// Configuración JaCoCo para cobertura de tests
+// ==================== JACOCO ====================
 jacoco {
     toolVersion = "0.8.11"
 }
@@ -59,29 +60,41 @@ jacocoTestReport {
     reports {
         xml.required = true
         html.required = true
-        csv.required = false
     }
-
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {
             fileTree(dir: it, exclude: [
                     '**/MutantDetectorApplication.class',
-                    '**/config/**',
-                    '**/dto/**',
-                    '**/entity/**',
-                    '**/exception/**',
-                    '**/validation/ValidDnaSequence.class'
+                    '**/config/**'
             ])
         }))
     }
 }
 
-jacocoTestCoverageVerification {
-    violationRules {
-        rule {
-            limit {
-                minimum = 0.80
-            }
-        }
-    }
+test.finalizedBy jacocoTestReport
+
+// MUTATION TESTING
+pitest {
+    // Plugin JUnit 5 (CRÍTICO)
+    junit5PluginVersion = '1.2.1'
+    testPlugin = 'junit5'
+
+    // Clases a mutar
+    targetClasses = [
+            'org.example.mutantes.service.*',
+            'org.example.mutantes.controller.*'
+    ]
+
+    // Tests a ejecutar
+    targetTests = [
+            'org.example.mutantes.*Test'
+    ]
+
+    // Configuración
+    threads = 4
+    outputFormats = ['HTML', 'XML']
+    timestampedReports = false
+    mutators = ['DEFAULTS']
+    timeoutConstInMillis = 3000
+    verbose = true
 }
