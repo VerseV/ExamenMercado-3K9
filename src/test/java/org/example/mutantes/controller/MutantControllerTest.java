@@ -5,7 +5,6 @@ import org.example.mutantes.dto.DnaRequest;
 import org.example.mutantes.dto.StatsResponse;
 import org.example.mutantes.service.MutantService;
 import org.example.mutantes.service.StatsService;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -20,7 +19,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(MutantController.class)
-@DisplayName("MutantController - Tests de Integración")
 class MutantControllerTest {
 
     @Autowired
@@ -36,14 +34,11 @@ class MutantControllerTest {
     private StatsService statsService;
 
     @Test
-    @DisplayName("POST /mutant debe retornar 200 OK cuando es mutante")
-    void testCheckMutant_ReturnOk_WhenIsMutant() throws Exception {
-        // Arrange
+    void testCheckMutantReturnOkWhenIsMutant() throws Exception {
         String[] dna = {"ATGCGA", "CAGTGC", "TTATGT", "AGAAGG", "CCCCTA", "TCACTG"};
         DnaRequest request = new DnaRequest(dna);
         when(mutantService.analyzeDna(any())).thenReturn(true);
 
-        // Act & Assert
         mockMvc.perform(post("/mutant")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -51,14 +46,11 @@ class MutantControllerTest {
     }
 
     @Test
-    @DisplayName("POST /mutant debe retornar 403 Forbidden cuando no es mutante")
-    void testCheckMutant_ReturnForbidden_WhenNotMutant() throws Exception {
-        // Arrange
+    void testCheckMutantReturnForbiddenWhenNotMutant() throws Exception {
         String[] dna = {"ATGCGA", "CAGTGC", "TTATTT", "AGACGG", "GCGTCA", "TCACTG"};
         DnaRequest request = new DnaRequest(dna);
         when(mutantService.analyzeDna(any())).thenReturn(false);
 
-        // Act & Assert
         mockMvc.perform(post("/mutant")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -66,12 +58,9 @@ class MutantControllerTest {
     }
 
     @Test
-    @DisplayName("POST /mutant debe retornar 400 Bad Request para DNA null")
-    void testCheckMutant_ReturnBadRequest_WhenDnaIsNull() throws Exception {
-        // Arrange
+    void testCheckMutantReturnBadRequestWhenDnaIsNull() throws Exception {
         DnaRequest request = new DnaRequest(null);
 
-        // Act & Assert
         mockMvc.perform(post("/mutant")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -79,13 +68,10 @@ class MutantControllerTest {
     }
 
     @Test
-    @DisplayName("POST /mutant debe retornar 400 Bad Request para DNA vacío")
-    void testCheckMutant_ReturnBadRequest_WhenDnaIsEmpty() throws Exception {
-        // Arrange
+    void testCheckMutantReturnBadRequestWhenDnaIsEmpty() throws Exception {
         String[] dna = {};
         DnaRequest request = new DnaRequest(dna);
 
-        // Act & Assert
         mockMvc.perform(post("/mutant")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -93,13 +79,10 @@ class MutantControllerTest {
     }
 
     @Test
-    @DisplayName("POST /mutant debe retornar 400 Bad Request para matriz no cuadrada")
-    void testCheckMutant_ReturnBadRequest_WhenNonSquare() throws Exception {
-        // Arrange
-        String[] dna = {"ATGC", "CAG", "TTAT"};  // No es cuadrada
+    void testCheckMutantReturnBadRequestWhenNonSquare() throws Exception {
+        String[] dna = {"ATGC", "CAG", "TTAT"};
         DnaRequest request = new DnaRequest(dna);
 
-        // Act & Assert
         mockMvc.perform(post("/mutant")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -107,13 +90,10 @@ class MutantControllerTest {
     }
 
     @Test
-    @DisplayName("POST /mutant debe retornar 400 Bad Request para caracteres inválidos")
-    void testCheckMutant_ReturnBadRequest_WhenInvalidCharacters() throws Exception {
-        // Arrange
-        String[] dna = {"ATGX", "CAGT", "TTAT", "AGAC"};  // X es inválido
+    void testCheckMutantReturnBadRequestWhenInvalidCharacters() throws Exception {
+        String[] dna = {"ATGX", "CAGT", "TTAT", "AGAC"};
         DnaRequest request = new DnaRequest(dna);
 
-        // Act & Assert
         mockMvc.perform(post("/mutant")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -121,13 +101,10 @@ class MutantControllerTest {
     }
 
     @Test
-    @DisplayName("GET /stats debe retornar 200 OK con estadísticas")
-    void testGetStats_ReturnOk_WithStats() throws Exception {
-        // Arrange
+    void testGetStatsReturnOkWithStats() throws Exception {
         StatsResponse stats = new StatsResponse(40L, 100L, 0.4);
         when(statsService.getStats()).thenReturn(stats);
 
-        // Act & Assert
         mockMvc.perform(get("/stats"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -137,13 +114,10 @@ class MutantControllerTest {
     }
 
     @Test
-    @DisplayName("GET /stats debe retornar estadísticas incluso sin registros")
-    void testGetStats_ReturnOk_WithZeroStats() throws Exception {
-        // Arrange
+    void testGetStatsReturnOkWithZeroStats() throws Exception {
         StatsResponse stats = new StatsResponse(0L, 0L, 0.0);
         when(statsService.getStats()).thenReturn(stats);
 
-        // Act & Assert
         mockMvc.perform(get("/stats"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.count_mutant_dna").value(0))
