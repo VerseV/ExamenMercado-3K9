@@ -24,7 +24,7 @@ API REST para detectar mutantes mediante análisis de secuencias de ADN.
 - **Java 17** - Lenguaje de programación
 - **Spring Boot 3.2.0** - Framework principal
 - **Spring Data JPA** - Persistencia
-- **H2 Database** - BD en memoria (desarrollo)
+- **H2 Database** - Base de datos en memoria
 - **JUnit 5 + Mockito** - Testing
 - **JaCoCo** - Cobertura de código
 - **PIT (Pitest)** - Mutation testing
@@ -252,16 +252,152 @@ private String calculateDnaHash(String[] dna) {
 ### Estructura del Proyecto
 
 ```
-src/main/java/org/example/mutantes/
-├── config/                  # Configuración (Swagger)
-├── controller/              # Endpoints REST
-├── dto/                     # Request/Response objects
-├── entity/                  # Entidades JPA
-├── exception/               # Manejo de errores
-├── repository/              # Acceso a datos
-├── service/                 # Lógica de negocio
-├── validation/              # Validaciones custom
-└── ExamenMercado3K9Application.java
+ExamenMercado-3K9/
+│
+├── 📂 .gradle/                       ← Cache de Gradle
+├── 📂 .idea/                         ← Configuración IntelliJ IDEA
+├── 📂 build/                         ← Archivos compilados
+│   ├── classes/
+│   ├── libs/                         (JAR generado)
+│   └── reports/                      (Tests, JaCoCo, Pitest)
+│
+├── 📂 docs/                          ← Documentación
+│   ├── diagrama-secuencia.puml       (PlantUML fuente)
+│   ├── Diagrama_de_Secuencia.png     (Imagen diagrama)
+│   ├── Examen Mercadolibre .pdf      (Enunciado original)
+│   └── Mutantes_Nivel3_Espejo_Adriel.pdf  (Documentación técnica)
+│
+├── 📂 gradle/                        ← Gradle Wrapper
+│   └── wrapper/
+│
+├── 📂 src/
+│   │
+│   ├── 📂 main/
+│   │   │
+│   │   ├── 📂 java/org/example/mutantes/
+│   │   │   │
+│   │   │   ├── 📂 config/            ← Configuraciones
+│   │   │   │   └── SwaggerConfig.java
+│   │   │   │
+│   │   │   ├── 📂 controller/        ← Capa de presentación
+│   │   │   │   ├── HomeController.java     (Redirección a Swagger)
+│   │   │   │   └── MutantController.java   (POST /mutant, GET /stats)
+│   │   │   │
+│   │   │   ├── 📂 dto/               ← Data Transfer Objects
+│   │   │   │   ├── DnaRequest.java
+│   │   │   │   ├── ErrorResponse.java
+│   │   │   │   └── StatsResponse.java
+│   │   │   │
+│   │   │   ├── 📂 entity/            ← Entidades JPA
+│   │   │   │   └── DnaRecord.java
+│   │   │   │
+│   │   │   ├── 📂 exception/         ← Manejo de errores
+│   │   │   │   ├── DnaHashCalculationException.java
+│   │   │   │   └── GlobalExceptionHandler.java
+│   │   │   │
+│   │   │   ├── 📂 repository/        ← Acceso a datos
+│   │   │   │   └── DnaRecordRepository.java
+│   │   │   │
+│   │   │   ├── 📂 service/           ← Lógica de negocio
+│   │   │   │   ├── MutantDetector.java
+│   │   │   │   ├── MutantService.java
+│   │   │   │   └── StatsService.java
+│   │   │   │
+│   │   │   ├── 📂 validation/        ← Validaciones custom
+│   │   │   │   ├── ValidDnaSequence.java      (Anotación)
+│   │   │   │   └── ValidDnaSequenceValidator.java (Lógica)
+│   │   │   │
+│   │   │   └── ExamenMercado3K9Application.java  ← Main class
+│   │   │
+│   │   └── 📂 resources/
+│   │       ├── 📂 static/            (Archivos estáticos)
+│   │       ├── 📂 templates/         (Plantillas)
+│   │       └── application.properties
+│   │
+│   └── 📂 test/
+│       └── 📂 java/org/example/mutantes/
+│           │
+│           ├── 📂 controller/
+│           │   └── MutantControllerTest.java  (8 tests integración)
+│           │
+│           ├── 📂 service/
+│           │   ├── MutantDetectorTest.java    (17 tests unitarios)
+│           │   ├── MutantServiceTest.java     (5 tests unitarios)
+│           │   └── StatsServiceTest.java      (6 tests unitarios)
+│           │
+│           └── ExamenMercado3K9ApplicationTests.java
+│
+├── .dockerignore                     ← Exclusiones Docker
+├── .gitattributes                    ← Configuración Git
+├── .gitignore                        ← Archivos ignorados
+├── build.gradle                      ← Dependencias y plugins
+├── Dockerfile                        ← Construcción Docker
+├── ExamenMercado-3K9.iml            ← Módulo IntelliJ
+├── gradlew                          ← Script Gradle (Unix/Mac)
+├── gradlew.bat                      ← Script Gradle (Windows)
+├── README.md                        ← Este archivo
+└── settings.gradle                  ← Configuración Gradle
+```
+
+### Descripción de Cada Capa
+
+| Capa | Responsabilidad | Archivos |
+|------|-----------------|----------|
+| **config/** | Configurar beans de Spring | SwaggerConfig |
+| **controller/** | Recibir HTTP requests | HomeController, MutantController |
+| **dto/** | Contratos de API | DnaRequest, StatsResponse, ErrorResponse |
+| **entity/** | Mapeo a BD | DnaRecord |
+| **exception/** | Manejo de errores | GlobalExceptionHandler, Custom exceptions |
+| **repository/** | Queries a BD | DnaRecordRepository |
+| **service/** | Lógica de negocio | MutantDetector, MutantService, StatsService |
+| **validation/** | Validaciones custom | ValidDnaSequence, Validator |
+
+### Archivos Clave
+
+#### **HomeController.java**
+Redirecciona `/` a Swagger UI automáticamente:
+```java
+@Controller
+public class HomeController {
+    @GetMapping("/")
+    public String home() {
+        return "redirect:/swagger-ui.html";
+    }
+}
+```
+
+#### **ExamenMercado3K9Application.java**
+Clase principal de Spring Boot:
+```java
+@SpringBootApplication
+public class ExamenMercado3K9Application {
+    public static void main(String[] args) {
+        SpringApplication.run(ExamenMercado3K9Application.class, args);
+    }
+}
+```
+
+#### **application.properties**
+Configuración de la aplicación:
+```properties
+# Base de datos H2
+spring.datasource.url=jdbc:h2:mem:testdb
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=
+
+# JPA/Hibernate
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=false
+
+# H2 Console
+spring.h2.console.enabled=true
+spring.h2.console.path=/h2-console
+
+# Swagger
+springdoc.api-docs.path=/api-docs
+springdoc.swagger-ui.path=/swagger-ui.html
 ```
 
 ### Arquitectura en Capas
@@ -269,7 +405,7 @@ src/main/java/org/example/mutantes/
 ```
 Cliente (Postman/Swagger)
     ↓
-Controller (REST endpoints)
+HomeController (Redirección) / MutantController (REST endpoints)
     ↓
 DTO (Validaciones)
     ↓
@@ -277,7 +413,9 @@ Service (Lógica de negocio)
     ↓
 Repository (JPA)
     ↓
-Database (H2/PostgreSQL)
+Entity (DnaRecord)
+    ↓
+Database (H2)
 ```
 
 **Capas transversales:**
@@ -409,7 +547,7 @@ curl https://global-3k9-adriel-espejo-47664.onrender.com/stats
 - [x] Dockerfile con multi-stage build
 
 ### Nivel 3: Base de Datos y Estadísticas ✅
-- [x] Base de datos H2 (desarrollo) / PostgreSQL (producción)
+- [x] Base de datos H2
 - [x] Deduplicación con hash SHA-256
 - [x] Endpoint `GET /stats`
 - [x] Índices en BD para optimización
@@ -417,6 +555,7 @@ curl https://global-3k9-adriel-espejo-47664.onrender.com/stats
 - [x] Cobertura >90% en service layer
 - [x] Mutation testing con PIT
 - [x] Diagrama de secuencia
+- [x] Documentación en PDF
 
 ---
 
@@ -478,17 +617,10 @@ curl https://global-3k9-adriel-espejo-47664.onrender.com/stats
 
 ## 📚 Documentación Adicional
 
-- [Diagrama de Secuencia](docs/diagrama-secuencia.puml)
+- [Documentación Técnica (PDF)](docs/Mutantes_Nivel3_Espejo_Adriel.pdf)
+- [Diagrama de Secuencia (PNG)](docs/Diagrama_de_Secuencia.png)
+- [Diagrama de Secuencia (PlantUML)](docs/diagrama-secuencia.puml)
 - [Examen Original](docs/Examen%20Mercadolibre%20.pdf)
-
----
-
-## 📄 Licencia
-
-Proyecto académico desarrollado para el examen técnico de Desarrollo de Software, UTN Mendoza.
-
-**Autor:** Adriel Espejo  
-**Legajo:** 47664
 
 ---
 
@@ -500,14 +632,10 @@ Proyecto académico desarrollado para el examen técnico de Desarrollo de Softwa
 
 ---
 
-<div align="center">
-
-**Desarrollado con ❤️ para el examen de MercadoLibre**
+**Autor:** Adriel Espejo | Legajo: 47664 | UTN Mendoza - 2025
 
 [![Java](https://img.shields.io/badge/Java-17-orange.svg)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.0-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Tests](https://img.shields.io/badge/Tests-37%20passing-success.svg)]()
 [![Coverage](https://img.shields.io/badge/Coverage-93%25-brightgreen.svg)]()
 [![Mutation](https://img.shields.io/badge/Mutation-64%25-yellow.svg)]()
-
-</div>
